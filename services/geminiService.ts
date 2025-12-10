@@ -1,7 +1,28 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI, Type, Schema, GenerateContentResponse } from "@google/genai";
 import { Question, Topic, Grade, DifficultyMode } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+// Helper function to retry operations when the model is overloaded
+async function withRetry<T>(operation: () => Promise<T>, retries = 3, delay = 2000): Promise<T> {
+  try {
+    return await operation();
+  } catch (error: any) {
+    // Check for 503 Service Unavailable or "overloaded" message
+    const isOverloaded = 
+      error?.status === 503 || 
+      error?.code === 503 || 
+      (error?.message && error.message.includes("overloaded"));
+
+    if (isOverloaded && retries > 0) {
+      console.warn(`Model overloaded. Retrying in ${delay}ms... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      // Retry with double the delay (exponential backoff)
+      return withRetry(operation, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+}
 
 // Schema for generating questions
 const questionSchema: Schema = {
@@ -89,7 +110,8 @@ export const generateQuestionsForTopic = async (
       5. Pastikan anda menjana TEPAT ${count} soalan.
     `;
 
-    const response = await ai.models.generateContent({
+    // Use withRetry to handle 503 Overloaded errors
+    const response = await withRetry<GenerateContentResponse>(() => ai.models.generateContent({
       model: model,
       contents: prompt,
       config: {
@@ -97,7 +119,7 @@ export const generateQuestionsForTopic = async (
         responseSchema: questionSchema,
         temperature: 0.7,
       },
-    });
+    }));
 
     if (response.text) {
       const data = JSON.parse(response.text);
@@ -110,11 +132,11 @@ export const generateQuestionsForTopic = async (
     throw new Error("No data returned");
   } catch (error) {
     console.error("Error generating questions:", error);
-    // Fallback static questions if API fails
+    // Fallback static questions if API fails after retries
     return [
       {
         id: 1,
-        questionText: `Maaf, Cikgu Syafiq sedang sibuk. Soalan percubaan untuk Tahun ${grade}: 5 + 5 = ?`,
+        questionText: `Maaf, talian Cikgu Syafiq agak sibuk (Server Overloaded). Sila cuba lagi sebentar lagi atau jawab soalan percubaan ini: 5 + 5 = ?`,
         options: ["8", "10", "12", "15"],
         correctAnswerIndex: 1,
         difficulty: "Mudah"
@@ -137,14 +159,15 @@ export const getExplanation = async (question: string, answer: string, grade: Gr
       Jangan terlalu panjang, ringkas dan padat (maksimum 3 ayat atau langkah).
     `;
 
-    const response = await ai.models.generateContent({
+    // Use withRetry for explanation as well
+    const response = await withRetry<GenerateContentResponse>(() => ai.models.generateContent({
       model: model,
       contents: prompt,
-    });
+    }));
 
     return response.text || "Maaf, tiada penjelasan dapat dijana buat masa ini.";
   } catch (error) {
     console.error("Error getting explanation:", error);
-    return "Sila semak buku teks anda untuk jalan kerja yang lengkap.";
+    return "Maaf, Cikgu Syafiq tidak dapat memberikan penjelasan sekarang. Sila semak buku teks anda.";
   }
 };
