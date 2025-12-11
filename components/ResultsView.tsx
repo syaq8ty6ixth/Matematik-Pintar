@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { QuizState, ScoreRecord } from '../types';
 import { saveScore, getLeaderboard } from '../services/storageService';
@@ -127,7 +126,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ state, onRestart, onHo
                 onClick={handleRestart}
                 className="w-full py-3 px-6 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-transform hover:scale-105 shadow-lg shadow-blue-200"
               >
-                Cuba Lagi (Set Baru)
+                Jana Set Soalan Baru 🔄
               </button>
               <button
                 onClick={handleHome}

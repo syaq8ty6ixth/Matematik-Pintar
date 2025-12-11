@@ -64,14 +64,25 @@ export const generateQuestionsForTopic = async (
     const model = "gemini-2.5-flash";
     
     // Specific instructions per grade based on Malaysian KSSR Syllabus
+    // Expanded detail for Year 6 to ensure high quality "sets"
     const syllabusGuidelines = `
       Panduan DSKP KSSR Semakan Mengikut Tahun ${grade}:
-      - Tahun 1: Nombor hingga 100. Operasi tambah/tolak asas. Pecahan (1/2, 1/4) sahaja. Wang (RM/sen). Masa (Siang/Malam, Jam mudah). Tiada perpuluhan/peratus.
+      - Tahun 1: Nombor hingga 100. Operasi tambah/tolak asas. Pecahan (1/2, 1/4) sahaja. Wang (RM/sen). Masa (Siang/Malam, Jam mudah).
       - Tahun 2: Nombor hingga 1000. Darab & Bahagi (sifir 2,5,10,4, etc). Perpuluhan mudah. Bentuk 2D/3D asas.
       - Tahun 3: Nombor hingga 10000. Pecahan wajar, Perpuluhan, Peratus. Wang hingga RM1000. Masa (Minit).
       - Tahun 4: Nombor hingga 100,000. Koordinat (Suku pertama). Nisbah.
       - Tahun 5: Nombor hingga 1,000,000. Nombor Perdana. Gandaan. Ruang (Perimeter/Luas/Isipadu).
-      - Tahun 6: Nombor hingga 10,000,000. Kebarangkalian. Cukai/Insurans (Kewangan).
+      - Tahun 6 (FOKUS UTAMA):
+        * Nombor: Hingga 10 juta, Pola nombor, Nombor gubahan/perdana, Kalkulator.
+        * Operasi: Operasi asas & bergabung melibatkan tanda kurung.
+        * Pecahan/Perpuluhan/Peratus: Pendaraban/Pembahagian pecahan, Peratusan objek, Simpanan & Pelaburan.
+        * Wang: Harga kos, Jual, Untung/Rugi, Diskaun, Rebat, Baucer, Cukai perkhidmatan/jualan, Insurans, Aset & Liabiliti.
+        * Masa: Zon masa dunia.
+        * Ukuran: Penyelesaian masalah harian kompleks melibatkan Panjang, Jisim, Isipadu.
+        * Ruang: Sudut (pedalaman/luaran poligon sekata), Bulatan (Pusat, Jejari, Diameter), Bentuk Gubahan.
+        * Koordinat/Nisbah: Kadaran menyelesaikan masalah.
+        * Statistik: Tafsir carta pai, Mod, Median, Min, Julat.
+        * Kebarangkalian: Peristiwa mungkin/tidak mungkin.
     `;
 
     // Adjust instructions based on difficulty mode
@@ -81,12 +92,12 @@ export const generateQuestionsForTopic = async (
     } else if (mode === 'Sederhana') {
       difficultyInstruction = "Campuran seimbang antara soalan mudah dan sederhana. Masukkan sedikit elemen penyelesaian masalah.";
     } else {
-      difficultyInstruction = "Fokus kepada soalan yang mencabar, penyelesaian masalah berayat, dan elemen KBAT (Kemahiran Berfikir Aras Tinggi).";
+      difficultyInstruction = "Fokus kepada soalan yang mencabar, penyelesaian masalah berayat, dan elemen KBAT (Kemahiran Berfikir Aras Tinggi). Contoh: Soalan 'Penyelesaian Masalah' yang memerlukan murid berfikir 2-3 langkah.";
     }
 
     const prompt = `
-      Anda adalah Cikgu Syafiq, seorang guru matematik yang pakar dengan silibus Malaysia (KSSR Semakan).
-      Sila jana **${count}** soalan matematik objektif (pilihan ganda) dalam Bahasa Melayu untuk murid **Tahun ${grade}** (Darjah ${grade}).
+      Anda adalah Cikgu Syafiq, guru pakar KSSR Malaysia.
+      Sila jana **${count}** soalan matematik objektif (pilihan ganda) Bahasa Melayu untuk murid **Tahun ${grade}**.
       
       Topik: "${topic}".
       Mod Latihan: **${mode}**.
@@ -95,17 +106,13 @@ export const generateQuestionsForTopic = async (
 
       Syarat Penting:
       1. Soalan MESTI 100% menepati silibus Tahun ${grade}.
-      2. Gunakan laras bahasa yang sesuai dengan umur murid.
+      2. **Variasi Konteks:** Gunakan pelbagai situasi (contoh: pasar raya, sukan sekolah, masakan, sains) supaya set soalan sentiasa segar dan tidak berulang.
       3. **VISUAL (SVG):**
-         - Jika soalan memerlukan gambar rajah (wajib untuk soalan bentuk, pecahan, masa, dan pengiraan objek), sertakan kod SVG dalam field 'svg'.
-         - **Gaya Visual:** Flat design, kartun, garisan tebal (stroke-width: 2-4), warna cerah (pastel/vibrant) yang kontras dan menarik untuk kanak-kanak.
-         - **Teknikal:**
-           - Gunakan \`viewBox="0 0 400 300"\`.
-           - Pastikan elemen lukisan besar dan memenuhi ruang.
-           - Untuk pecahan: Gunakan carta pai atau bar yang jelas pembahagiannya dan warna yang berbeza untuk kawasan berlorek.
-           - Untuk masa: Lukis muka jam analog dengan nombor besar dan jarum jam/minit yang tebal dan jelas.
-           - Untuk pengiraan: Lukis objek mudah (epal, bola, bintang) yang disusun rapi (grid layout) agar mudah dikira.
-           - Jangan gunakan text kecil.
+         - Jika soalan melibatkan Geometri, Pecahan, Masa, atau Data (Carta Pai/Bar), WAJIB sertakan kod SVG dalam field 'svg'.
+         - **Gaya Visual:** Flat design, kartun, garisan tebal (stroke-width: 2-4), warna cerah.
+         - **Teknikal:** ViewBox "0 0 400 300". Elemen lukisan MESTI besar dan memenuhi ruang.
+         - *Untuk Tahun 6 (Topik Ruang/Sudut):* Lukis poligon atau bulatan dengan label sudut/jejari yang jelas.
+         - *Untuk Tahun 6 (Data):* Lukis Carta Pai dengan pecahan peratusan yang jelas.
       4. ${difficultyInstruction}
       5. Pastikan anda menjana TEPAT ${count} soalan.
     `;
@@ -117,7 +124,7 @@ export const generateQuestionsForTopic = async (
       config: {
         responseMimeType: "application/json",
         responseSchema: questionSchema,
-        temperature: 0.7,
+        temperature: 0.75, // Increased slightly for more variety in question sets
       },
     }));
 
@@ -155,7 +162,7 @@ export const getExplanation = async (question: string, answer: string, grade: Gr
       
       Anda adalah Cikgu Syafiq. Terangkan jalan kerja untuk mendapatkan jawapan ini. 
       Gunakan Bahasa Melayu yang mudah difahami, ceria, dan menggalakkan. 
-      Gunakan analogi jika perlu (contohnya buah, gula-gula) terutamanya untuk Tahun 1-3.
+      Gunakan analogi jika perlu.
       Jangan terlalu panjang, ringkas dan padat (maksimum 3 ayat atau langkah).
     `;
 
