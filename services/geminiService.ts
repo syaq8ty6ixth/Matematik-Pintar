@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type, Schema, GenerateContentResponse } from "@google/genai";
 import { Question, Topic, Grade, DifficultyMode } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || 'FAKE_API_KEY_FOR_DEVELOPMENT' });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 // Helper function to retry operations when the model is overloaded
 async function withRetry<T>(operation: () => Promise<T>, retries = 3, delay = 2000): Promise<T> {

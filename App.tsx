@@ -223,8 +223,8 @@ const App: React.FC = () => {
                  onSelectDifficulty={startQuiz}
                  onBack={handleBackToTopic}
                />
-               <footer className="text-center p-8 text-gray-400 text-sm">
-                 Dikuasakan oleh Google Gemini AI 🚀
+               <footer className="text-center p-8 text-gray-400 text-sm font-medium">
+                 Hak Cipta Terpelihara © Syafiq Johar
                </footer>
             </>
           )}
@@ -243,8 +243,8 @@ const App: React.FC = () => {
                   selectedGrade={gameState.grade}
                   onBack={handleBackToGrade}
                />
-               <footer className="text-center p-8 text-gray-400 text-sm">
-                 Dikuasakan oleh Google Gemini AI 🚀
+               <footer className="text-center p-8 text-gray-400 text-sm font-medium">
+                 Hak Cipta Terpelihara © Syafiq Johar
                </footer>
              </>
           )}
@@ -253,8 +253,8 @@ const App: React.FC = () => {
           {!gameState.isLoading && !gameState.isFinished && !gameState.grade && (
             <>
               <GradeSelector onSelectGrade={handleSelectGrade} />
-              <footer className="text-center p-8 text-gray-400 text-sm">
-                Dikuasakan oleh Google Gemini AI 🚀
+              <footer className="text-center p-8 text-gray-400 text-sm font-medium">
+                Hak Cipta Terpelihara © Syafiq Johar
               </footer>
             </>
           )}
